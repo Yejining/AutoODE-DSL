@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 from torch.utils import data
 import matplotlib.pyplot as plt
+import torch.nn.functional as fun
 import random
 import warnings
 warnings.filterwarnings("ignore")
@@ -28,7 +29,7 @@ class PiecewiseLinearModel(nn.Module):
     def forward(self, xx):
         if len(xx.shape) < 3:
             xx = xx.unsqueeze(-1)
-        out = torch.cat([xx, F.relu(xx - self.breaks)],2)
+        out = torch.cat([xx, fun.relu(xx - self.breaks)],2)
         return self.linear(out).squeeze(-1)
     
 class AutoODE_COVID(nn.Module):
@@ -127,7 +128,7 @@ class AutoODE_COVID(nn.Module):
     
     def RK4(self, num_steps):
         
-        t = torch.linspace(1, num_steps, num_steps).repeat(self.num_regions, 1)
+        t = torch.linspace(1, num_steps, num_steps).repeat(self.num_regions, 1).to('cuda')
         if self.n_breaks > 0:
             beta = self.plm(t)
         else:
